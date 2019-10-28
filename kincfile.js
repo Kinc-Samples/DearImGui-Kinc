@@ -1,4 +1,4 @@
-let project = new Project('New Project');
+let project = new Project('DearImGui');
 
 project.addFile('Sources/**');
 project.setDebugDir('Deployment');
