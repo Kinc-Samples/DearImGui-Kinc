@@ -232,8 +232,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
 				kinc_g4_set_texture(g_FontSampler, (kinc_g4_texture*)pcmd->TextureId);
 				kinc_g4_set_vertex_buffer(&g_VB);
 				kinc_g4_set_index_buffer(&g_IB);
-                /*ctx->DrawIndexed(pcmd->ElemCount, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset);*/
-				kinc_g4_draw_indexed_vertices_from_to(pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount);
+				kinc_g4_draw_indexed_vertices_from_to_from(pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount, pcmd->VtxOffset + global_vtx_offset);
             }
         }
         global_idx_offset += cmd_list->IdxBuffer.Size;
@@ -285,6 +284,7 @@ static void ImGui_ImplG4_CreateFontsTexture()
 
     // Create texture sampler
 	g_FontSampler = kinc_g4_pipeline_get_texture_unit(&g_Pipeline, "Texture");
+	g_FontSamplerInitialized = true;
 }
 
 static void load_shader(const char* filename, kinc_g4_shader_t* shader, kinc_g4_shader_type_t shader_type)
