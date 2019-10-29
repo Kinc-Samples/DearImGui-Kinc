@@ -21,12 +21,12 @@ static bool         g_MousePressed[3] = { false, false, false };
 //static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = {};
 static char*        g_ClipboardTextData = NULL;
 
-static const char* ImGui_ImplSDL2_GetClipboardText(void*)
+static const char* ImGui_ImplKinc_GetClipboardText(void*)
 {
 	return "";
 }
 
-static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
+static void ImGui_ImplKinc_SetClipboardText(void*, const char* text)
 {
     
 }
@@ -36,7 +36,7 @@ static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 // If you have multiple SDL events and some of them are not meant to be used by dear imgui, you may need to filter events based on their windowID field.
-bool ImGui_ImplSDL2_ProcessEvent()
+bool ImGui_ImplKinc_ProcessEvent()
 {
     /*ImGuiIO& io = ImGui::GetIO();
     switch (event->type)
@@ -77,7 +77,7 @@ bool ImGui_ImplSDL2_ProcessEvent()
     return false;
 }
 
-static bool ImGui_ImplSDL2_Init(int window)
+static bool ImGui_ImplKinc_Init(int window)
 {
     g_Window = window;
 
@@ -111,8 +111,8 @@ static bool ImGui_ImplSDL2_Init(int window)
     io.KeyMap[ImGuiKey_Y] = KINC_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = KINC_KEY_Z;
 
-    io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
-    io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
+    io.SetClipboardTextFn = ImGui_ImplKinc_SetClipboardText;
+    io.GetClipboardTextFn = ImGui_ImplKinc_GetClipboardText;
     io.ClipboardUserData = NULL;
 
     /*g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
@@ -149,7 +149,7 @@ void ImGui_ImplKinc_Shutdown()
     memset(g_MouseCursors, 0, sizeof(g_MouseCursors));*/
 }
 
-static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
+static void ImGui_ImplKinc_UpdateMousePosAndButtons()
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -190,7 +190,7 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
 #endif*/
 }
 
-static void ImGui_ImplSDL2_UpdateMouseCursor()
+static void ImGui_ImplKinc_UpdateMouseCursor()
 {
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
@@ -210,7 +210,7 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     }*/
 }
 
-static void ImGui_ImplSDL2_UpdateGamepads()
+static void ImGui_ImplKinc_UpdateGamepads()
 {
     /*ImGuiIO& io = ImGui::GetIO();
     memset(io.NavInputs, 0, sizeof(io.NavInputs));
@@ -251,7 +251,7 @@ static void ImGui_ImplSDL2_UpdateGamepads()
     #undef MAP_ANALOG*/
 }
 
-void ImGui_ImplSDL2_NewFrame(int window)
+void ImGui_ImplKinc_NewFrame(int window)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
@@ -271,9 +271,9 @@ void ImGui_ImplSDL2_NewFrame(int window)
     io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
     g_Time = current_time;
 
-    ImGui_ImplSDL2_UpdateMousePosAndButtons();
-    ImGui_ImplSDL2_UpdateMouseCursor();
+    ImGui_ImplKinc_UpdateMousePosAndButtons();
+    ImGui_ImplKinc_UpdateMouseCursor();
 
     // Update game controllers (if enabled and available)
-    ImGui_ImplSDL2_UpdateGamepads();
+    ImGui_ImplKinc_UpdateGamepads();
 }

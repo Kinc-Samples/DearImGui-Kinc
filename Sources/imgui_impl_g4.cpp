@@ -54,7 +54,7 @@ struct VERTEX_CONSTANT_BUFFER
     float   mvp[4][4];
 };
 
-static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data)
+static void ImGui_ImplG4_SetupRenderState(ImDrawData* draw_data)
 {
     // Setup viewport
 	kinc_g4_viewport(0, 0, draw_data->DisplaySize.x, draw_data->DisplaySize.y);
@@ -91,7 +91,7 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data)
 
 // Render function
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
-void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
+void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized
     if (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f)
@@ -190,7 +190,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->IAGetInputLayout(&old.InputLayout);*/
 
     // Setup desired DX state
-    ImGui_ImplDX11_SetupRenderState(draw_data);
+    ImGui_ImplG4_SetupRenderState(draw_data);
 
     // Render command lists
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
@@ -208,7 +208,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
                 // User callback, registered via ImDrawList::AddCallback()
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
                 if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    ImGui_ImplDX11_SetupRenderState(draw_data);
+                    ImGui_ImplG4_SetupRenderState(draw_data);
                 else
                     pcmd->UserCallback(cmd_list, pcmd);
             }
@@ -250,7 +250,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();*/
 }
 
-static void ImGui_ImplDX11_CreateFontsTexture()
+static void ImGui_ImplG4_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -287,7 +287,7 @@ static void load_shader(const char* filename, kinc_g4_shader_t* shader, kinc_g4_
 	kinc_g4_shader_init(shader, data, data_size, shader_type);
 }
 
-bool    ImGui_ImplDX11_CreateDeviceObjects()
+bool    ImGui_ImplG4_CreateDeviceObjects()
 {
     if (g_FontSamplerInitialized)
         ImGui_ImplG4_InvalidateDeviceObjects();
@@ -357,12 +357,12 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
         g_pd3dDevice->CreateDepthStencilState(&desc, &g_pDepthStencilState);
     }*/
 
-    ImGui_ImplDX11_CreateFontsTexture();
+    ImGui_ImplG4_CreateFontsTexture();
 
     return true;
 }
 
-void    ImGui_ImplDX11_InvalidateDeviceObjects()
+void    ImGui_ImplG4_InvalidateDeviceObjects()
 {
     /*if (!g_pd3dDevice)
         return;
@@ -411,16 +411,16 @@ bool    ImGui_ImplG4_Init(int window)
     return true;
 }
 
-void ImGui_ImplDX11_Shutdown()
+void ImGui_ImplG4_Shutdown()
 {
-    ImGui_ImplDX11_InvalidateDeviceObjects();
+    ImGui_ImplG4_InvalidateDeviceObjects();
     /*if (g_pFactory) { g_pFactory->Release(); g_pFactory = NULL; }
     if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
     if (g_pd3dDeviceContext) { g_pd3dDeviceContext->Release(); g_pd3dDeviceContext = NULL; }*/
 }
 
-void ImGui_ImplDX11_NewFrame()
+void ImGui_ImplG4_NewFrame()
 {
     if (!g_FontSamplerInitialized)
-        ImGui_ImplDX11_CreateDeviceObjects();
+        ImGui_ImplG4_CreateDeviceObjects();
 }
