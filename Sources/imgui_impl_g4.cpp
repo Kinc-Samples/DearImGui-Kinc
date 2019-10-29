@@ -329,6 +329,10 @@ bool    ImGui_ImplG4_CreateDeviceObjects()
 	g_Pipeline.fragment_shader = &g_PixelShader;
 	g_Pipeline.input_layout[0] = &g_InputLayout;
 	g_Pipeline.input_layout[1] = NULL;
+	g_Pipeline.blend_source = KINC_G4_BLEND_SOURCE_ALPHA;
+	g_Pipeline.blend_destination = KINC_G4_BLEND_INV_SOURCE_ALPHA;
+	g_Pipeline.alpha_blend_source = KINC_G4_BLEND_SOURCE_ALPHA;
+	g_Pipeline.alpha_blend_destination = KINC_G4_BLEND_INV_SOURCE_ALPHA;
 	kinc_g4_pipeline_compile(&g_Pipeline);
 
 	// Create the constant buffer
