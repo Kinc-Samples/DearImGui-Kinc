@@ -261,6 +261,7 @@ static void ImGui_ImplG4_CreateFontsTexture()
 		{
 			memcpy(&tex[y * stride], &pixels[y * width * 4], width * 4);
 		}
+		kinc_g4_texture_unlock(&g_Texture);
     }
 
     // Store our identifier
