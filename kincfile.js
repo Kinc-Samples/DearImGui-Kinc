@@ -1,7 +1,10 @@
 let project = new Project('DearImGui');
 
+project.addDefine('IMGUI_USER_CONFIG="imguiconfig.h"');
+project.addIncludeDir('include');
+
 project.addIncludeDir('imgui');
-project.addFile('Sources/**');
+project.addFiles('Sources/**', 'include/**', 'Shaders/**');
 project.setDebugDir('Deployment');
 
 resolve(project);
