@@ -75,12 +75,7 @@ static void ImGui_ImplG4_SetupRenderState(ImDrawData* draw_data)
     ctx->DSSetShader(NULL, NULL, 0); // In theory we should backup and restore this as well.. very infrequently used..
     ctx->CSSetShader(NULL, NULL, 0); // In theory we should backup and restore this as well.. very infrequently used..*/
 
-	kinc_g4_pipeline_init(&g_Pipeline);
-	g_Pipeline.vertex_shader = &g_VertexShader;
-	g_Pipeline.fragment_shader = &g_PixelShader;
-	g_Pipeline.input_layout[0] = &g_InputLayout;
-	g_Pipeline.input_layout[1] = NULL;
-	kinc_g4_pipeline_compile(&g_Pipeline);
+	kinc_g4_set_pipeline(&g_Pipeline);
 
     // Setup blend state
     /*const float blend_factor[4] = { 0.f, 0.f, 0.f, 0.f };
@@ -102,7 +97,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
     {
 		if (g_VertexBufferInitialized) { kinc_g4_vertex_buffer_destroy(&g_VB); }
         g_VertexBufferSize = draw_data->TotalVtxCount + 5000;
-		kinc_g4_vertex_buffer_init(&g_VB, 3, &g_InputLayout, KINC_G4_USAGE_DYNAMIC, 0);
+		kinc_g4_vertex_buffer_init(&g_VB, g_VertexBufferSize, &g_InputLayout, KINC_G4_USAGE_DYNAMIC, 0);
 		g_VertexBufferInitialized = true;
     }
     if (!g_IndexBufferInitialized || g_IndexBufferSize < draw_data->TotalIdxCount)
@@ -218,7 +213,6 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
 				kinc_g4_scissor(pcmd->ClipRect.x - clip_off.x, pcmd->ClipRect.y - clip_off.y, pcmd->ClipRect.z - clip_off.x, pcmd->ClipRect.w - clip_off.y);
 
                 // Bind texture, Draw
-				kinc_g4_set_pipeline(&g_Pipeline);
 				kinc_g4_set_texture(g_FontSampler, (kinc_g4_texture*)pcmd->TextureId);
 				kinc_g4_set_vertex_buffer(&g_VB);
 				kinc_g4_set_index_buffer(&g_IB);
@@ -305,16 +299,23 @@ bool    ImGui_ImplG4_CreateDeviceObjects()
 
         // Create the input layout
 		kinc_g4_vertex_structure_init(&g_InputLayout);
-		kinc_g4_vertex_structure_add(&g_InputLayout, "pos", KINC_G4_VERTEX_DATA_FLOAT2);
-		kinc_g4_vertex_structure_add(&g_InputLayout, "uv", KINC_G4_VERTEX_DATA_FLOAT2);
-		kinc_g4_vertex_structure_add(&g_InputLayout, "col", KINC_G4_VERTEX_DATA_COLOR);
-
-        // Create the constant buffer
-		g_ProjMtxConstant = kinc_g4_pipeline_get_constant_location(&g_Pipeline, "ProjMtx");
+		kinc_g4_vertex_structure_add(&g_InputLayout, "Position", KINC_G4_VERTEX_DATA_FLOAT2);
+		kinc_g4_vertex_structure_add(&g_InputLayout, "UV", KINC_G4_VERTEX_DATA_FLOAT2);
+		kinc_g4_vertex_structure_add(&g_InputLayout, "Color", KINC_G4_VERTEX_DATA_COLOR);
     }
 
     // Create the pixel shader
 	load_shader("imgui.frag", &g_PixelShader, KINC_G4_SHADER_TYPE_FRAGMENT);
+
+	kinc_g4_pipeline_init(&g_Pipeline);
+	g_Pipeline.vertex_shader = &g_VertexShader;
+	g_Pipeline.fragment_shader = &g_PixelShader;
+	g_Pipeline.input_layout[0] = &g_InputLayout;
+	g_Pipeline.input_layout[1] = NULL;
+	kinc_g4_pipeline_compile(&g_Pipeline);
+
+	// Create the constant buffer
+	g_ProjMtxConstant = kinc_g4_pipeline_get_constant_location(&g_Pipeline, "ProjMtx");
 
     // Create the blending setup
     /*{
