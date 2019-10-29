@@ -84,6 +84,13 @@ static void ImGui_ImplG4_SetupRenderState(ImDrawData* draw_data)
     ctx->RSSetState(g_pRasterizerState);*/
 }
 
+struct ImKincVert
+{
+	ImVec2  pos;
+	ImVec2  uv;
+	ImVec4  col;
+};
+
 // Render function
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
 void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
@@ -109,12 +116,21 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
     }
 
     // Upload vertex/index data into a single contiguous GPU buffer
-    ImDrawVert* vtx_dst = (ImDrawVert*)kinc_g4_vertex_buffer_lock_all(&g_VB);
+	ImKincVert* vtx_dst = (ImKincVert*)kinc_g4_vertex_buffer_lock_all(&g_VB);
     ImDrawIdx* idx_dst = (ImDrawIdx*)kinc_g4_index_buffer_lock(&g_IB);
     for (int n = 0; n < draw_data->CmdListsCount; n++)
     {
         const ImDrawList* cmd_list = draw_data->CmdLists[n];
-        memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+        //memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+		for (int i = 0; i < cmd_list->VtxBuffer.Size; ++i)
+		{
+			vtx_dst[i].pos = cmd_list->VtxBuffer.Data[i].pos;
+			vtx_dst[i].uv = cmd_list->VtxBuffer.Data[i].uv;
+			vtx_dst[i].col.w = ((cmd_list->VtxBuffer.Data[i].col >> 24) & 0xff) / 255.0f;
+			vtx_dst[i].col.z = ((cmd_list->VtxBuffer.Data[i].col >> 16) & 0xff) / 255.0f;
+			vtx_dst[i].col.y = ((cmd_list->VtxBuffer.Data[i].col >>  8) & 0xff) / 255.0f;
+			vtx_dst[i].col.x = ((cmd_list->VtxBuffer.Data[i].col >>  0) & 0xff) / 255.0f;
+		}
         memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
         vtx_dst += cmd_list->VtxBuffer.Size;
         idx_dst += cmd_list->IdxBuffer.Size;
@@ -302,7 +318,7 @@ bool    ImGui_ImplG4_CreateDeviceObjects()
 		kinc_g4_vertex_structure_init(&g_InputLayout);
 		kinc_g4_vertex_structure_add(&g_InputLayout, "Position", KINC_G4_VERTEX_DATA_FLOAT2);
 		kinc_g4_vertex_structure_add(&g_InputLayout, "UV", KINC_G4_VERTEX_DATA_FLOAT2);
-		kinc_g4_vertex_structure_add(&g_InputLayout, "Color", KINC_G4_VERTEX_DATA_COLOR);
+		kinc_g4_vertex_structure_add(&g_InputLayout, "Color", KINC_G4_VERTEX_DATA_FLOAT4);
     }
 
     // Create the pixel shader
