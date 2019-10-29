@@ -7,6 +7,7 @@
 #include <kinc/pch.h>
 
 #include <kinc/input/keyboard.h>
+#include <kinc/input/mouse.h>
 #include <kinc/system.h>
 #include <kinc/window.h>
 
@@ -17,7 +18,8 @@
 // Data
 static int  g_Window = NULL;
 static kinc_ticks_t g_Time = 0;
-static bool         g_MousePressed[3] = { false, false, false };
+static bool         g_MousePressed[5] = { false, false, false, false, false };
+static bool         g_MousePressedCurrently[5] = { false, false, false, false, false };
 //static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = {};
 static char*        g_ClipboardTextData = NULL;
 
@@ -31,50 +33,88 @@ static void ImGui_ImplKinc_SetClipboardText(void*, const char* text)
     
 }
 
-// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-// If you have multiple SDL events and some of them are not meant to be used by dear imgui, you may need to filter events based on their windowID field.
-bool ImGui_ImplKinc_ProcessEvent()
+static void keyboard_key_down(int key_code)
 {
-    /*ImGuiIO& io = ImGui::GetIO();
-    switch (event->type)
-    {
-    case SDL_MOUSEWHEEL:
-        {
-            if (event->wheel.x > 0) io.MouseWheelH += 1;
-            if (event->wheel.x < 0) io.MouseWheelH -= 1;
-            if (event->wheel.y > 0) io.MouseWheel += 1;
-            if (event->wheel.y < 0) io.MouseWheel -= 1;
-            return true;
-        }
-    case SDL_MOUSEBUTTONDOWN:
-        {
-            if (event->button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
-            if (event->button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
-            if (event->button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
-            return true;
-        }
-    case SDL_TEXTINPUT:
-        {
-            io.AddInputCharactersUTF8(event->text.text);
-            return true;
-        }
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        {
-            int key = event->key.keysym.scancode;
-            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-            io.KeysDown[key] = (event->type == SDL_KEYDOWN);
-            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-            io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-            return true;
-        }
-    }*/
-    return false;
+	ImGuiIO& io = ImGui::GetIO();
+	switch (key_code)
+	{
+	case KINC_KEY_SHIFT:
+		io.KeyShift = true;
+		break;
+	case KINC_KEY_CONTROL:
+		io.KeyCtrl = true;
+		break;
+	case KINC_KEY_ALT:
+	case KINC_KEY_ALT_GR:
+		io.KeyAlt = true;
+		break;
+	default:
+		IM_ASSERT(key_code >= 0 && key_code < IM_ARRAYSIZE(io.KeysDown));
+		io.KeysDown[key_code] = true;
+		break;
+	}
+}
+
+static void keyboard_key_up(int key_code)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	switch (key_code)
+	{
+	case KINC_KEY_SHIFT:
+		io.KeyShift = false;
+		break;
+	case KINC_KEY_CONTROL:
+		io.KeyCtrl = false;
+		break;
+	case KINC_KEY_ALT:
+	case KINC_KEY_ALT_GR:
+		io.KeyAlt = false;
+		break;
+	default:
+		IM_ASSERT(key_code >= 0 && key_code < IM_ARRAYSIZE(io.KeysDown));
+		io.KeysDown[key_code] = false;
+		break;
+	}
+}
+
+static void keyboard_key_press(unsigned character)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	char text[2];
+	text[0] = character;
+	text[1] = 0;
+	io.AddInputCharactersUTF8(text);
+}
+
+static void mouse_move(int window, int x, int y, int movement_x, int movement_y)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MousePos = ImVec2((float)x, (float)y);
+}
+
+static void mouse_press(int window, int button, int x, int y)
+{
+	if (button < 5)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		g_MousePressed[button] = true;
+		g_MousePressedCurrently[button] = true;
+	}
+}
+
+static void mouse_release(int window, int button, int x, int y)
+{
+	if (button < 5)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		g_MousePressedCurrently[button] = false;
+	}
+}
+
+static void mouse_scroll(int window, int delta)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseWheel += delta;
 }
 
 static bool ImGui_ImplKinc_Init(int window)
@@ -115,6 +155,15 @@ static bool ImGui_ImplKinc_Init(int window)
     io.GetClipboardTextFn = ImGui_ImplKinc_GetClipboardText;
     io.ClipboardUserData = NULL;
 
+	kinc_keyboard_key_down_callback = keyboard_key_down;
+	kinc_keyboard_key_up_callback = keyboard_key_up;
+	kinc_keyboard_key_press_callback = keyboard_key_press;
+
+	kinc_mouse_move_callback = mouse_move;
+	kinc_mouse_press_callback = mouse_press;
+	kinc_mouse_release_callback = mouse_release;
+	kinc_mouse_scroll_callback = mouse_scroll;
+
     /*g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
     g_MouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
     g_MouseCursors[ImGuiMouseCursor_ResizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
@@ -131,7 +180,7 @@ static bool ImGui_ImplKinc_Init(int window)
 
 bool ImGui_ImplKinc_InitForG4(int window)
 {
-    return ImGui_ImplG4_Init(window);
+	return ImGui_ImplKinc_Init(window);
 }
 
 void ImGui_ImplKinc_Shutdown()
@@ -156,15 +205,14 @@ static void ImGui_ImplKinc_UpdateMousePosAndButtons()
     // Set OS mouse position if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
     /*if (io.WantSetMousePos)
         SDL_WarpMouseInWindow(g_Window, (int)io.MousePos.x, (int)io.MousePos.y);
-    else*/
-        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+    else
+        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);*/
 
-    /*int mx, my;
-    Uint32 mouse_buttons = SDL_GetMouseState(&mx, &my);
-    io.MouseDown[0] = g_MousePressed[0] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = g_MousePressed[1] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    io.MouseDown[2] = g_MousePressed[2] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-    g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;*/
+	for (int i = 0; i < 5; ++i)
+	{
+		io.MouseDown[i] = g_MousePressed[i] || g_MousePressedCurrently[i];  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		g_MousePressed[i] = false;
+	}
 
 /*#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
     SDL_Window* focused_window = SDL_GetKeyboardFocus();
