@@ -137,6 +137,9 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
     }
 	kinc_g4_vertex_buffer_unlock_all(&g_VB);
 	kinc_g4_index_buffer_unlock(&g_IB);
+	
+	// Setup desired DX state
+    ImGui_ImplG4_SetupRenderState(draw_data);
 
     // Setup orthographic projection matrix into our constant buffer
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
@@ -199,9 +202,6 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData* draw_data)
     ctx->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
     ctx->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
     ctx->IAGetInputLayout(&old.InputLayout);*/
-
-    // Setup desired DX state
-    ImGui_ImplG4_SetupRenderState(draw_data);
 
     // Render command lists
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
