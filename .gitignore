@@ -1,2 +1,3 @@
 /build
-/Deployment/*
+/Deployment/*.frag
+/Deployment/*.vert
