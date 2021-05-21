@@ -137,19 +137,33 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 	// Setup orthographic projection matrix into our constant buffer
 	// Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0)
 	// for single viewport apps.
-	{
-		float L = draw_data->DisplayPos.x;
-		float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-		float T = draw_data->DisplayPos.y;
-		float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
-		float mvp[4][4] = {
-		    {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
-		    {0.0f, 2.0f / (T - B), 0.0f, 0.0f},
-		    {0.0f, 0.0f, 0.5f, 0.0f},
-		    {(R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f},
-		};
-		kinc_g4_set_floats(g_ProjMtxConstant, &mvp[0][0], 4 * 4);
-	}
+
+	float L = draw_data->DisplayPos.x;
+	float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
+	float T = draw_data->DisplayPos.y;
+	float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+
+	kinc_matrix4x4_t mvp;
+
+	kinc_matrix4x4_set(&mvp, 0, 0, 2.0f / (R - L));
+	kinc_matrix4x4_set(&mvp, 0, 1, 0.0f);
+	kinc_matrix4x4_set(&mvp, 0, 2, 0.0f);
+	kinc_matrix4x4_set(&mvp, 0, 3, 0.0f);
+
+	kinc_matrix4x4_set(&mvp, 1, 0, 0.0f);
+	kinc_matrix4x4_set(&mvp, 1, 1, 2.0f / (T - B));
+	kinc_matrix4x4_set(&mvp, 1, 2, 0.0f);
+	kinc_matrix4x4_set(&mvp, 1, 3, 0.0f);
+
+	kinc_matrix4x4_set(&mvp, 2, 0, 0.0f);
+	kinc_matrix4x4_set(&mvp, 2, 1, 0.0f);
+	kinc_matrix4x4_set(&mvp, 2, 2, 0.5f);
+	kinc_matrix4x4_set(&mvp, 2, 3, 0.0f);
+
+	kinc_matrix4x4_set(&mvp, 3, 0, (R + L) / (L - R));
+	kinc_matrix4x4_set(&mvp, 3, 1, (T + B) / (B - T));
+	kinc_matrix4x4_set(&mvp, 3, 2, 0.5f);
+	kinc_matrix4x4_set(&mvp, 3, 3, 1.0f);
 
 	// Backup DX state that will be modified to restore it afterwards (unfortunately this is very ugly looking and verbose. Close your eyes!)
 	/*struct BACKUP_DX11_STATE
@@ -222,6 +236,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 				kinc_g4_set_texture(g_FontSampler, (kinc_g4_texture *)pcmd->TextureId);
 				kinc_g4_set_vertex_buffer(&g_VB);
 				kinc_g4_set_index_buffer(&g_IB);
+				kinc_g4_set_matrix4(g_ProjMtxConstant, &mvp);
 				kinc_g4_draw_indexed_vertices_from_to_from(pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount, pcmd->VtxOffset + global_vtx_offset);
 			}
 		}
