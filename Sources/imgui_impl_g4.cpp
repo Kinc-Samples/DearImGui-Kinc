@@ -106,7 +106,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 			kinc_g4_index_buffer_destroy(&g_IB);
 		}
 		g_IndexBufferSize = draw_data->TotalIdxCount + 10000;
-		kinc_g4_index_buffer_init(&g_IB, g_IndexBufferSize, KINC_G4_INDEX_BUFFER_FORMAT_32BIT);
+		kinc_g4_index_buffer_init(&g_IB, g_IndexBufferSize, KINC_G4_INDEX_BUFFER_FORMAT_32BIT, KINC_G4_USAGE_DYNAMIC);
 		g_IndexBufferInitialized = true;
 	}
 

@@ -137,14 +137,14 @@ static bool ImGui_ImplKinc_Init(int window) {
 	io.GetClipboardTextFn = ImGui_ImplKinc_GetClipboardText;
 	io.ClipboardUserData = NULL;
 
-	kinc_keyboard_key_down_callback = keyboard_key_down;
-	kinc_keyboard_key_up_callback = keyboard_key_up;
-	kinc_keyboard_key_press_callback = keyboard_key_press;
+	kinc_keyboard_set_key_down_callback(keyboard_key_down);
+	kinc_keyboard_set_key_up_callback(keyboard_key_up);
+	kinc_keyboard_set_key_press_callback(keyboard_key_press);
 
-	kinc_mouse_move_callback = mouse_move;
-	kinc_mouse_press_callback = mouse_press;
-	kinc_mouse_release_callback = mouse_release;
-	kinc_mouse_scroll_callback = mouse_scroll;
+	kinc_mouse_set_move_callback(mouse_move);
+	kinc_mouse_set_press_callback(mouse_press);
+	kinc_mouse_set_release_callback(mouse_release);
+	kinc_mouse_set_scroll_callback(mouse_scroll);
 
 	/*g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 	g_MouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);

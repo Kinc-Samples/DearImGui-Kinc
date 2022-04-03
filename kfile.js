@@ -1,5 +1,7 @@
 const project = new Project('DearImGui');
 
+await project.addProject('Kinc');
+
 project.addDefine('IMGUI_USER_CONFIG="imguiconfig.h"');
 project.addIncludeDir('include');
 
@@ -14,5 +16,7 @@ project.addFiles(
 
 project.addFiles('Sources/**', 'include/**', 'Shaders/**');
 project.setDebugDir('Deployment');
+
+project.flatten();
 
 resolve(project);
