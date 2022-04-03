@@ -1,7 +1,7 @@
 [submodule "Kinc"]
 	path = Kinc
 	url = https://github.com/Kode/Kinc.git
-	branch = master
+	branch = main
 [submodule "imgui"]
 	path = imgui
 	url = https://github.com/ocornut/imgui.git
