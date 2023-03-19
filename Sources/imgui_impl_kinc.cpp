@@ -27,7 +27,7 @@ static const char *ImGui_ImplKinc_GetClipboardText(void *) {
 
 static void ImGui_ImplKinc_SetClipboardText(void *, const char *text) {}
 
-static void keyboard_key_down(int key_code) {
+static void keyboard_key_down(int key_code, void *data) {
 	ImGuiIO &io = ImGui::GetIO();
 	switch (key_code) {
 	case KINC_KEY_SHIFT:
@@ -47,7 +47,7 @@ static void keyboard_key_down(int key_code) {
 	}
 }
 
-static void keyboard_key_up(int key_code) {
+static void keyboard_key_up(int key_code, void *data) {
 	ImGuiIO &io = ImGui::GetIO();
 	switch (key_code) {
 	case KINC_KEY_SHIFT:
@@ -67,7 +67,7 @@ static void keyboard_key_up(int key_code) {
 	}
 }
 
-static void keyboard_key_press(unsigned character) {
+static void keyboard_key_press(unsigned character, void *data) {
 	ImGuiIO &io = ImGui::GetIO();
 	char text[2];
 	text[0] = character;
@@ -75,12 +75,12 @@ static void keyboard_key_press(unsigned character) {
 	io.AddInputCharactersUTF8(text);
 }
 
-static void mouse_move(int window, int x, int y, int movement_x, int movement_y) {
+static void mouse_move(int window, int x, int y, int movement_x, int movement_y, void *data) {
 	ImGuiIO &io = ImGui::GetIO();
 	io.MousePos = ImVec2((float)x, (float)y);
 }
 
-static void mouse_press(int window, int button, int x, int y) {
+static void mouse_press(int window, int button, int x, int y, void *data) {
 	if (button < 5) {
 		ImGuiIO &io = ImGui::GetIO();
 		g_MousePressed[button] = true;
@@ -88,14 +88,14 @@ static void mouse_press(int window, int button, int x, int y) {
 	}
 }
 
-static void mouse_release(int window, int button, int x, int y) {
+static void mouse_release(int window, int button, int x, int y, void *data) {
 	if (button < 5) {
 		ImGuiIO &io = ImGui::GetIO();
 		g_MousePressedCurrently[button] = false;
 	}
 }
 
-static void mouse_scroll(int window, int delta) {
+static void mouse_scroll(int window, int delta, void *data) {
 	ImGuiIO &io = ImGui::GetIO();
 	io.MouseWheel += delta;
 }
@@ -137,14 +137,14 @@ static bool ImGui_ImplKinc_Init(int window) {
 	io.GetClipboardTextFn = ImGui_ImplKinc_GetClipboardText;
 	io.ClipboardUserData = NULL;
 
-	kinc_keyboard_set_key_down_callback(keyboard_key_down);
-	kinc_keyboard_set_key_up_callback(keyboard_key_up);
-	kinc_keyboard_set_key_press_callback(keyboard_key_press);
+	kinc_keyboard_set_key_down_callback(keyboard_key_down, NULL);
+	kinc_keyboard_set_key_up_callback(keyboard_key_up, NULL);
+	kinc_keyboard_set_key_press_callback(keyboard_key_press, NULL);
 
-	kinc_mouse_set_move_callback(mouse_move);
-	kinc_mouse_set_press_callback(mouse_press);
-	kinc_mouse_set_release_callback(mouse_release);
-	kinc_mouse_set_scroll_callback(mouse_scroll);
+	kinc_mouse_set_move_callback(mouse_move, NULL);
+	kinc_mouse_set_press_callback(mouse_press, NULL);
+	kinc_mouse_set_release_callback(mouse_release, NULL);
+	kinc_mouse_set_scroll_callback(mouse_scroll, NULL);
 
 	/*g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 	g_MouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);

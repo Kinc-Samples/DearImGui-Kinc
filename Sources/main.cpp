@@ -17,7 +17,7 @@
 void CreateRenderTarget();
 void CleanupRenderTarget();
 
-static void update(void) {
+static void update(void *data) {
 	bool show_demo_window = false;
 	bool show_another_window = true;
 	float clear_color[] = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -61,7 +61,8 @@ static void update(void) {
 		ImGui::Begin("Another Window",
 		             &show_another_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me")) show_another_window = false;
+		if (ImGui::Button("Close Me"))
+			show_another_window = false;
 		ImGui::End();
 	}
 
@@ -120,7 +121,7 @@ int kickstart(int, char **) {
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	kinc_set_update_callback(update);
+	kinc_set_update_callback(update, NULL);
 	kinc_start();
 
 	// Cleanup

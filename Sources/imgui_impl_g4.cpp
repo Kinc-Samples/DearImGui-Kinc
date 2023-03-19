@@ -90,7 +90,8 @@ struct ImKincVert {
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
 void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 	// Avoid rendering when minimized
-	if (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f) return;
+	if (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f)
+		return;
 
 	// Create and grow vertex/index buffers if needed
 	if (!g_VertexBufferInitialized || g_VertexBufferSize < draw_data->TotalVtxCount) {
@@ -112,7 +113,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 
 	// Upload vertex/index data into a single contiguous GPU buffer
 	ImKincVert *vtx_dst = (ImKincVert *)kinc_g4_vertex_buffer_lock_all(&g_VB);
-	ImDrawIdx *idx_dst = (ImDrawIdx *)kinc_g4_index_buffer_lock(&g_IB);
+	ImDrawIdx *idx_dst = (ImDrawIdx *)kinc_g4_index_buffer_lock_all(&g_IB);
 	for (int n = 0; n < draw_data->CmdListsCount; n++) {
 		const ImDrawList *cmd_list = draw_data->CmdLists[n];
 		// memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
@@ -128,8 +129,8 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 		vtx_dst += cmd_list->VtxBuffer.Size;
 		idx_dst += cmd_list->IdxBuffer.Size;
 	}
+	kinc_g4_index_buffer_unlock_all(&g_IB);
 	kinc_g4_vertex_buffer_unlock_all(&g_VB);
-	kinc_g4_index_buffer_unlock(&g_IB);
 
 	// Setup desired DX state
 	ImGui_ImplG4_SetupRenderState(draw_data);
@@ -301,7 +302,8 @@ static void load_shader(const char *filename, kinc_g4_shader_t *shader, kinc_g4_
 }
 
 bool ImGui_ImplG4_CreateDeviceObjects() {
-	if (g_FontSamplerInitialized) ImGui_ImplG4_InvalidateDeviceObjects();
+	if (g_FontSamplerInitialized)
+		ImGui_ImplG4_InvalidateDeviceObjects();
 
 	// By using D3DCompile() from <d3dcompiler.h> / d3dcompiler.lib, we introduce a dependency to a given version of d3dcompiler_XX.dll (see D3DCOMPILER_DLL_A)
 	// If you would like to use this DX11 sample code but remove this dependency you can:
@@ -438,5 +440,6 @@ void ImGui_ImplG4_Shutdown() {
 }
 
 void ImGui_ImplG4_NewFrame() {
-	if (!g_FontSamplerInitialized) ImGui_ImplG4_CreateDeviceObjects();
+	if (!g_FontSamplerInitialized)
+		ImGui_ImplG4_CreateDeviceObjects();
 }
