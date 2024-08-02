@@ -216,6 +216,7 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 	int global_idx_offset = 0;
 	int global_vtx_offset = 0;
 	ImVec2 clip_off = draw_data->DisplayPos;
+	ImVec2 clip_scale = draw_data->FramebufferScale;
 	for (int n = 0; n < draw_data->CmdListsCount; n++) {
 		const ImDrawList *cmd_list = draw_data->CmdLists[n];
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
@@ -229,9 +230,14 @@ void ImGui_ImplG4_RenderDrawData(ImDrawData *draw_data) {
 					pcmd->UserCallback(cmd_list, pcmd);
 			}
 			else {
+				// Project scissor/clipping rectangles into framebuffer space
+				ImVec2 clip_min((pcmd->ClipRect.x - clip_off.x) * clip_scale.x, (pcmd->ClipRect.y - clip_off.y) * clip_scale.y);
+				ImVec2 clip_max((pcmd->ClipRect.z - clip_off.x) * clip_scale.x, (pcmd->ClipRect.w - clip_off.y) * clip_scale.y);
+				if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
+					continue;
+
 				// Apply scissor/clipping rectangle
-				kinc_g4_scissor((int)(pcmd->ClipRect.x - clip_off.x), (int)(pcmd->ClipRect.y - clip_off.y), (int)(pcmd->ClipRect.z - clip_off.x),
-				                (int)(pcmd->ClipRect.w - clip_off.y));
+				kinc_g4_scissor((int)clip_min.x, (int)clip_min.y, (int)(clip_max.x - clip_min.x), (int)(clip_max.y - clip_min.y));
 
 				// Bind texture, Draw
 				kinc_g4_set_texture(g_FontSampler, (kinc_g4_texture *)pcmd->TextureId);
